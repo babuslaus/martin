@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+.<!DOCTYPE html>
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
@@ -130,80 +130,44 @@
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-analytics.js";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+  import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
-        // Firebase konfiguráció
-        const firebaseConfig = {
-            apiKey: "AIzaSyCWJsQ9pAdSTTSvoCEoGjrNUKOF7LhEbUg",
-            authDomain: "martincuccok0614.firebaseapp.com",
-            databaseURL: "https://martincuccok0614-default-rtdb.firebaseio.com",
-            projectId: "martincuccok0614",
-            storageBucket: "martincuccok0614.firebasestorage.app",
-            messagingSenderId: "611653704890",
-            appId: "1:611653704890:web:8bce3da07af7fb1051f683",
-            measurementId: "G-4843ZE7CPX"
-        };
+  // 1. Firebase konfiguráció
+  const firebaseConfig = {
+    apiKey: "AIzaSyCWJSq9pAdSTTSvoCEOgJrNUKOF7LhEBUg",
+    authDomain: "martincuccok0614.firebaseapp.com",
+    databaseURL: "https://martincuccok0614-default-rtdb.firebaseio.com",
+    projectId: "martincuccok0614",
+    storageBucket: "martincuccok0614.firebasestorage.app",
+    messagingSenderId: "611653704890",
+    appId: "1:611653704890:web:8bce3da07af7fb1051f683",
+    measurementId: "G-4843ZE7CPX"
+  };
 
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
+  // 2. Firebase Inicializálás
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-        // Termékek betöltése a localStorage-ból
-        function betoltTermekek() {
-            const mentes = localStorage.getItem('martins_keszlet');
-            const keszlet = mentes ? JSON.parse(mentes) : {};
-            const kontener = document.getElementById('termek-kontener');
-            kontener.innerHTML = '';
+  // 3. ADATOK LEKÉRÉSE ÉS REALTIME FRISSÍTÉSE (Automatikus szinkronizáció)
+  const keszletRef = ref(db, 'martins_keszlet');
+  
+  onValue(keszletRef, (snapshot) => {
+    const data = snapshot.val();
+    const keszlet = data || {};
+    
+    // Itt hívd meg a meglévő UI kirajzoló függvényedet
+    // Kicseréli a régi localStorage-es betöltést
+    renderKeszlet(keszlet); 
+  });
 
-            const elemekKulcsai = Object.keys(keszlet);
-
-            if (elemekKulcsai.length === 0) {
-                kontener.innerHTML = '<div class="ures-ujenet">Jelenleg nincs nálam semmi :).</div>';
-                return;
-            }
-
-            for (const key in keszlet) {
-                const item = keszlet[key];
-                
-                const kartya = document.createElement('div');
-                kartya.className = 'termek-kartya';
-
-                const vanKeszlet = item.db > 0;
-                const keszletOsztaly = vanKeszlet ? 'keszlet-info' : 'keszlet-info elfogyott';
-                const keszletSzoveg = vanKeszlet ? `Készleten: ${item.db} db` : 'Nincs készleten!';
-
-                kartya.innerHTML = `
-                    <h2>${item.nev}</h2>
-                    <img src="${item.kep}" alt="${item.nev}" class="kattinthato-kep" 
-                         onclick="nyitModal('${item.kep}', '${item.nev}', '${item.leiras || ''}')">
-                    <div class="${keszletOsztaly}">${keszletSzoveg}</div>
-                `;
-                kontener.appendChild(kartya);
-            }
-        }
-
-        // Globális ablakhoz kötjük a függvényeket, hogy elérhetőek legyenek HTML-ből (onclick)
-        window.nyitModal = function(kepSrc, cim, leiras) {
-            document.getElementById('modalKep').src = kepSrc;
-            document.getElementById('modalCim').innerText = cim;
-            document.getElementById('modalLeiras').innerText = leiras || 'Nincs külön leírás megadva.';
-            document.getElementById('adatlapModal').style.display = 'flex';
-        };
-
-        window.zarModal = function(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        };
-
-        window.onclick = function(event) {
-            var adatlap = document.getElementById('adatlapModal');
-            if (event.target == adatlap) {
-                window.zarModal('adatlapModal');
-            }
-        };
-
-        // Automatikus betöltés az oldal betöltődésekor
-        document.addEventListener('DOMContentLoaded', betoltTermekek);
-    </script>
+  // 4. MENTÉS A FELHŐBE (localStorage.setItem helyett!)
+  window.mentesAdatbazisba = function(ujKeszletData) {
+    set(ref(db, 'martins_keszlet'), ujKeszletData)
+      .then(() => console.log("Sikeres mentés a felhőbe!"))
+      .catch((err) => console.error("Hiba a mentés során:", err));
+  };
+</script>
 </body>
 </html>
