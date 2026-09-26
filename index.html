@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Martin oldala</title>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .termek-halozat {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 20px;                               
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+
+        .termek-kartya {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .termek-kartya h2 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .keszlet-info {
+            font-weight: bold;
+            color: #007bff;
+            background-color: #e7f3ff;
+            padding: 6px 12px;
+            border-radius: 15px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .keszlet-info.elfogyott {
+            color: #d32f2f;
+            background-color: #ffebee;
+        }
+
+        .kattinthato-kep {
+            cursor: pointer;
+            transition: transform 0.2s;
+            max-width: 100%;
+            height: 150px;
+            object-fit: contain;
+        }
+
+        .kattinthato-kep:hover {
+            transform: scale(1.05); 
+        }
+
+        .ures-ujenet {
+            grid-column: span 3;
+            color: #777;
+            font-size: 1.1rem;
+            margin-top: 40px;
+        }
+
+        /* Modál stílusa */
+        .modal {
+            display: none; 
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); 
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <p>Mi van készleten?</p>
+
+    <div class="termek-halozat" id="termek-kontener">
+    </div>
+
+    <div id="adatlapModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="zarModal('adatlapModal')">&times;</span>
+            <h2 id="modalCim">Termék neve</h2>
+            <img id="modalKep" src="" alt="Termék" width="200" style="margin: 10px 0;">
+            <p id="modalLeiras">Itt jelennek meg a részletek...</p>
+        </div>
+    </div>
+
+    <script>
+        function betoltTermekek() {
+            const mentes = localStorage.getItem('martins_keszlet');
+            const keszlet = mentes ? JSON.parse(mentes) : {};
+            const kontener = document.getElementById('termek-kontener');
+            kontener.innerHTML = '';
+
+            const elemekKulcsai = Object.keys(keszlet);
+
+            if (elemekKulcsai.length === 0) {
+                kontener.innerHTML = '<div class="ures-ujenet">Jelenleg nincs nálam semmi :).</div>';
+                return;
+            }
+
+            for (const key in keszlet) {
+                const item = keszlet[key];
+                
+                const kartya = document.createElement('div');
+                kartya.className = 'termek-kartya';
+
+                const vanKeszlet = item.db > 0;
+                const keszletOsztaly = vanKeszlet ? 'keszlet-info' : 'keszlet-info elfogyott';
+                const keszletSzoveg = vanKeszlet ? `Készleten: ${item.db} db` : 'Nincs készleten!';
+
+                kartya.innerHTML = `
+                    <h2>${item.nev}</h2>
+                    <img src="${item.kep}" alt="${item.nev}" class="kattinthato-kep" 
+                         onclick="nyitModal('${item.kep}', '${item.nev}', '${item.leiras || ''}')">
+                    <div class="${keszletOsztaly}">${keszletSzoveg}</div>
+                `;
+                kontener.appendChild(kartya);
+            }
+        }
+
+        function nyitModal(kepSrc, cim, leiras) {
+            document.getElementById('modalKep').src = kepSrc;
+            document.getElementById('modalCim').innerText = cim;
+            document.getElementById('modalLeiras').innerText = leiras || 'Nincs külön leírás megadva.';
+            document.getElementById('adatlapModal').style.display = 'flex';
+        }
+
+        function zarModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            var adatlap = document.getElementById('adatlapModal');
+            if (event.target == adatlap) {
+                zarModal('adatlapModal');
+            }
+        }
+
+        window.onload = betoltTermekek;
+    </script>
+
+</body>
+</html>

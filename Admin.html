@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adminfelület</title>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .admin-box {
+            max-width: 800px;
+            margin: 0 auto 30px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row > div {
+            flex: 1;
+        }
+
+        label {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        input[type="text"], input[type="number"], textarea, input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .btn-hozzaadas {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .btn-hozzaadas:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: #f8f9fa;
+        }
+
+        .admin-thumb {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
+        .btn-mentes {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-mentes:hover {
+            background-color: #218838;
+        }
+
+        .btn-torles {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .btn-torles:hover {
+            background-color: #c82333;
+        }
+
+        .ures-tabla {
+            text-align: center;
+            color: #777;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ÚJ TERMÉK FELTÖLTÉSE -->
+    <div class="admin-box">
+        <h2>➕ Új termék hozzáadása</h2>
+        <form id="uj-termek-form" onsubmit="ujTermekHozzaadasa(event)">
+            <div class="form-row">
+                <div>
+                    <label for="ujNev">Név</label>
+                    <input type="text" id="ujNev" required placeholder="Pl. 3 kiscica">
+                </div>
+                <div>
+                    <label for="ujDb">Darabszám</label>
+                    <input type="number" id="ujDb" required min="0" value="30">
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 10px;">
+                <label for="ujKep">Kép kiválasztása (Feltöltés gépről/telefonról)</label>
+                <input type="file" id="ujKep" accept="image/*" required>
+            </div>
+
+            <div class="form-group">
+                <label for="ujLeiras">Leírás</label>
+                <textarea id="ujLeiras" rows="2" placeholder="Mit kell róla tudni?"></textarea>
+            </div>
+
+            <button type="submit" class="btn-hozzaadas">Termék hozzáadása</button>
+        </form>
+    </div>
+
+
+    <div class="admin-box">
+        <h1>🛠️ Mik vannak nálam?</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Kép</th>
+                    <th>Termék</th>
+                    <th>Készlet (db)</th>
+                    <th>Műveletek</th>
+                </tr>
+            </thead>
+            <tbody id="admin-lista">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function getKeszlet() {
+            const mentes = localStorage.getItem('martins_keszlet');
+            return mentes ? JSON.parse(mentes) : {};
+        }
+
+        function betoltAdmin() {
+            const keszlet = getKeszlet();
+            const tbody = document.getElementById('admin-lista');
+            tbody.innerHTML = '';
+
+            const elemekKulcsai = Object.keys(keszlet);
+
+            if (elemekKulcsai.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="ures-tabla">Még nem adtál hozzá egyetlen terméket sem. Töltsd ki a fenti űrlapot!</td></tr>';
+                return;
+            }
+
+            for (const key in keszlet) {
+                const item = keszlet[key];
+                const tr = document.createElement('tr');
+                
+                tr.innerHTML = `
+                    <td><img src="${item.kep}" class="admin-thumb" alt="Kép"></td>
+                    <td><strong>${item.nev}</strong></td>
+                    <td>
+                        <input type="number" id="input-${key}" value="${item.db}" min="0" style="width: 70px;"> db
+                    </td>
+                    <td>
+                        <button class="btn-mentes" onclick="mentes('${key}')">Mentés</button>
+                        <button class="btn-torles" onclick="torles('${key}')">Törlés</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+
+        function mentes(key) {
+            const keszlet = getKeszlet();
+            const ujErtek = parseInt(document.getElementById(`input-${key}`).value);
+
+            if (!isNaN(ujErtek) && ujErtek >= 0) {
+                keszlet[key].db = ujErtek;
+                localStorage.setItem('martins_keszlet', JSON.stringify(keszlet));
+                alert(`Sikeresen módosítva: ${keszlet[key].nev} -> ${ujErtek} db`);
+            } else {
+                alert('Kérlek érvényes számot adj meg!');
+            }
+        }
+
+        function torles(key) {
+            if (confirm('Biztosan törölni akarod ezt a terméket?')) {
+                const keszlet = getKeszlet();
+                delete keszlet[key];
+                localStorage.setItem('martins_keszlet', JSON.stringify(keszlet));
+                betoltAdmin();
+            }
+        }
+
+        function ujTermekHozzaadasa(event) {
+            event.preventDefault();
+            
+            const nev = document.getElementById('ujNev').value;
+            const db = parseInt(document.getElementById('ujDb').value);
+            const leiras = document.getElementById('ujLeiras').value;
+            const kepInput = document.getElementById('ujKep');
+
+            if (kepInput.files && kepInput.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const kepBase64 = e.target.result;
+                    const kulcs = 'item-' + Date.now();
+
+                    const keszlet = getKeszlet();
+                    keszlet[kulcs] = {
+                        nev: nev,
+                        db: db,
+                        kep: kepBase64,
+                        leiras: leiras
+                    };
+
+                    localStorage.setItem('martins_keszlet', JSON.stringify(keszlet));
+                    alert('Termék sikeresen hozzáadva!');
+                    
+                    document.getElementById('uj-termek-form').reset();
+                    betoltAdmin();
+                };
+
+                reader.readAsDataURL(kepInput.files[0]);
+            }
+        }
+
+        window.onload = betoltAdmin;
+    </script>
+
+</body>
+</html>
