@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Martin oldala</title>
-    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -183,7 +184,29 @@
             }
         }
 
-        window.onload = betoltTermekek;
+    const firebaseConfig = {
+  apiKey: "AIzaSyCWJsQ9pAdSTTSvoCEOgjNUKOF7LhEbUg",
+  authDomain: "martincuccok0614.firebaseapp.com",
+  databaseURL: "https://martincuccok0614-default-rtdb.firebaseio.com",
+  projectId: "martincuccok0614",
+  storageBucket: "martincuccok0614.appspot.com",
+  messagingSenderId: "611653704890",
+  appId: "1:611653704890:web:1931da76ef2efcf54d32f7"
+};
+
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+function mentesTermekek(termekek) {
+  database.ref('termekek').set(termekek);
+}
+
+database.ref('termekek').on('value', (snapshot) => {
+  const adatok = snapshot.val();
+  if (adatok && typeof betoltTermekek === 'function') {
+    betoltTermekek(adatok);
+  }
+});
     </script>
 
 </body>
