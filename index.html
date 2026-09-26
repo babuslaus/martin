@@ -184,30 +184,31 @@
             }
         }
 
-    const firebaseConfig = {
-  apiKey: "AIzaSyCWJsQ9pAdSTTSvoCEOgjNUKOF7LhEbUg",
-  authDomain: "martincuccok0614.firebaseapp.com",
-  databaseURL: "https://martincuccok0614-default-rtdb.firebaseio.com",
-  projectId: "martincuccok0614",
-  storageBucket: "martincuccok0614.appspot.com",
-  messagingSenderId: "611653704890",
-  appId: "1:611653704890:web:1931da76ef2efcf54d32f7"
-};
+  
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
 
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyCWJsQ9pAdSTTSvoCEoGjrNUKOF7LhEbUg",
+    authDomain: "martincuccok0614.firebaseapp.com",
+    databaseURL: "https://martincuccok0614-default-rtdb.firebaseio.com",
+    projectId: "martincuccok0614",
+    storageBucket: "martincuccok0614.firebasestorage.app",
+    messagingSenderId: "611653704890",
+    appId: "1:611653704890:web:8bce3da07af7fb1051f683",
+    measurementId: "G-4843ZE7CPX"
+  };
 
-function mentesTermekek(termekek) {
-  database.ref('termekek').set(termekek);
-}
-
-database.ref('termekek').on('value', (snapshot) => {
-  const adatok = snapshot.val();
-  if (adatok && typeof betoltTermekek === 'function') {
-    betoltTermekek(adatok);
-  }
-});
-    </script>
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
+    
 
 </body>
 </html>
