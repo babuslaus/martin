@@ -154,19 +154,15 @@
   const keszletRef = ref(db, 'martins_keszlet');
   
   onValue(keszletRef, (snapshot) => {
-    const data = snapshot.val();
-    const keszlet = data || {};
-    
-    // Itt hívd meg a meglévő UI kirajzoló függvényedet
-    // Kicseréli a régi localStorage-es betöltést
-    renderKeszlet(keszlet); 
+    const data = snapshot.val() || {};
+    localStorage.setItem('martins_keszlet', JSON.stringify(data));
+    if (typeof betoltTermekek === 'function') {
+      betoltTermekek();
+    }
   });
 
-  // 4. MENTÉS A FELHŐBE (localStorage.setItem helyett!)
   window.mentesAdatbazisba = function(ujKeszletData) {
-    set(ref(db, 'martins_keszlet'), ujKeszletData)
-      .then(() => console.log("Sikeres mentés a felhőbe!"))
-      .catch((err) => console.error("Hiba a mentés során:", err));
+    set(ref(db, 'martins_keszlet'), ujKeszletData);
   };
 </script>
 </body>
